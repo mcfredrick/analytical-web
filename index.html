@@ -8,83 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="plate.css">
 <style>
-/* Layout: a cyanotype engineering plate. Engine console on the left,
-   the sheet coming off the printing apparatus on the right. */
-:root {
-  --ground: #163e72;       /* Prussian blue of an 1842 cyanotype */
-  --ground-deep: #0e2a50;
-  --line: #eaf0f7;         /* the white of the drawing */
-  --dim: #a8bcd7;
-  --rule: #4b6d9c;
-  --paper: #f2eee3;        /* pasteboard of the cards */
-  --ink: #1d1c1a;
-  --amber: #f2c15b;        /* the card under the reading rods */
-  --display: "IM Fell English SC", "Iowan Old Style", Georgia, serif;
-  --italic: "IM Fell English", "Iowan Old Style", Georgia, serif;
-  --body: "Old Standard TT", "Iowan Old Style", Georgia, serif;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-html { background: var(--ground-deep); }
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--line);
-  font: 15px/1.5 var(--body);
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.07), transparent 55%),
-    radial-gradient(ellipse at 90% 100%, rgba(0,0,0,.25), transparent 60%),
-    linear-gradient(var(--rule) 1px, transparent 1px) 0 0 / 100% 32px,
-    var(--ground);
-  background-blend-mode: normal, normal, soft-light, normal;
-  padding-inline: max(16px, env(safe-area-inset-left, 0px));
-  padding-block: max(20px, env(safe-area-inset-top, 0px)) max(40px, env(safe-area-inset-bottom, 0px));
-}
-.plate { max-width: 1240px; margin: 0 auto; display: grid; gap: 28px; }
-
-/* Title block, as on an engineering drawing */
-header.title {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 32px; align-items: end;
-  border: 1.5px solid var(--line); outline: 1px solid var(--line); outline-offset: 4px;
-  padding: 22px 26px; margin: 5px;
-}
-.eyebrow { font: 13px/1 var(--display); letter-spacing: .14em; color: var(--dim); margin: 0 0 10px; }
-h1 { font: 400 clamp(2.2rem, 6vw, 4rem)/.95 var(--display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
-.lede { font: italic 1.12rem/1.45 var(--italic); color: var(--dim); max-width: 46em; margin: 12px 0 0; }
-.lede b { font-style: normal; color: var(--line); font-weight: 400; font-family: var(--body); }
-.status {
-  justify-self: end; text-align: right; font: 13px/1.4 var(--body); color: var(--dim);
-  display: grid; gap: 6px; min-width: 0;
-}
-.status strong { font: 400 1.25rem/1 var(--display); letter-spacing: .06em; color: var(--amber); }
-.status.done strong { color: var(--line); }
-.true-speed {
-  justify-self: end; margin-top: 6px; font: 400 14px/1.2 var(--display); letter-spacing: .08em;
-  color: var(--ground); background: var(--amber); border: 0; border-radius: 2px; padding: 9px 13px; cursor: pointer;
-}
-.true-speed:hover { background: var(--line); }
-.true-speed[hidden] { display: none; }
-.other-deck { justify-self: end; font: italic 14px/1.2 var(--italic); color: var(--line); }
-
-.works { display: grid; grid-template-columns: minmax(0, 430px) minmax(0, 1fr); gap: 28px; align-items: start; }
-@media (max-width: 900px) {
-  .works { grid-template-columns: minmax(0, 1fr); }
-  header.title { grid-template-columns: minmax(0, 1fr); }
-  .status { justify-self: start; text-align: left; }
-  .true-speed, .other-deck { justify-self: start; }
-  .apparatus { order: -1; }
-}
-
-.console { display: grid; gap: 22px; min-width: 0; }
-.part { min-width: 0; }
-.part h2 {
-  font: 400 1.05rem/1 var(--display); letter-spacing: .12em; margin: 0 0 10px;
-  display: flex; align-items: baseline; gap: 10px;
-}
-.part h2::after { content: ""; flex: 1; border-bottom: 1px dashed var(--rule); transform: translateY(-4px); }
-.part h2 small { font: italic 13px/1 var(--italic); letter-spacing: 0; color: var(--dim); order: 2; }
-
 /* The card chain */
 .chain { display: grid; gap: 7px; position: relative; padding-left: 22px; }
 .chain::before { /* the lacing that binds Jacquard cards into a chain */
@@ -131,25 +56,8 @@ h1 { font: 400 clamp(2.2rem, 6vw, 4rem)/.95 var(--display); margin: 0; text-wrap
 .wheel.next b { color: var(--amber); }
 .wheel.empty { opacity: .25; }
 
-/* Regulator and gauges */
-.ledger { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 0; }
-.ledger div { min-width: 0; }
-.ledger dt { font: 400 11.5px/1.2 var(--display); letter-spacing: .12em; color: var(--dim); }
-.ledger dd { margin: 3px 0 0; font: 1.15rem/1.25 var(--body); font-variant-numeric: tabular-nums; }
-.ledger .wide { grid-column: 1 / -1; }
-.regulator { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-.regulator button, .controls button {
-  font: 14px/1 var(--body); color: var(--line); background: transparent; border: 1px solid var(--dim);
-  padding: 8px 11px; border-radius: 2px; cursor: pointer;
-}
-.regulator button[aria-pressed="true"] { background: var(--line); color: var(--ground); border-color: var(--line); }
-.regulator button:hover, .controls button:hover { border-color: var(--line); }
-button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-.controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.note { font: italic 13px/1.45 var(--italic); color: var(--dim); margin: 10px 0 0; }
 
 /* Printing apparatus */
-.apparatus { min-width: 0; display: grid; gap: 14px; }
 .tape {
   font: 14px/1 var(--body); font-variant-numeric: tabular-nums; color: var(--ink); background: var(--paper);
   padding: 9px 12px; white-space: nowrap; overflow: hidden; display: flex; gap: 14px; justify-content: flex-end;
@@ -163,9 +71,7 @@ button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--amber); opacity: .85;
 }
 .sheet-wrap.done::after { display: none; }
-.sheet-label { font: italic 13px/1.4 var(--italic); color: var(--dim); margin: 0; }
 
-.error { background: #5c1a14; color: var(--line); padding: 12px 14px; border: 1px solid #c45a46; }
 
 @media (prefers-reduced-motion: reduce) { .card, .lever::before { transition: none; } }
 </style>
