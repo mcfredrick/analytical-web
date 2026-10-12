@@ -11,7 +11,8 @@ combinatorial card turns the chain back until the column reads zero.
 
 The Engine runs at Babbage's rated speeds (one addition a second, one
 fifty-digit division a minute), scaled by the regulator. At true speed the
-page takes about a day and a half.
+front page takes about two days and the engineer's manual about three and
+a half.
 
 ## Files
 
@@ -19,21 +20,23 @@ page takes about a day and a half.
 | --- | --- |
 | `index.html` | The engine console, printing apparatus and sheet |
 | `engine.js` | The Analytical Engine: Store, Mill, run-up lever, card reader |
-| `page.cards` | The punched deck. This is the website. |
-| `manuscript.html` | The compositor's manuscript the deck is punched from |
+| `page.cards` | The punched deck for the front page. This is the website. |
+| `manuscript.html` | The compositor's manuscript the front page is punched from |
+| `manual.cards` | The punched deck for the engineer's manual (`?deck=manual`) |
+| `manual.html` | The manuscript the manual is punched from |
 | `tools/punch.mjs` | The card punch |
 
 ## Changing the page
 
-Edit `manuscript.html`, then punch a fresh deck (Node 18 or later):
+Edit `manuscript.html` or `manual.html`, then punch fresh decks (Node 18 or later):
 
 ```sh
 node tools/punch.mjs
 ```
 
 The punch fills in the ledger figures, runs the deck on the Engine and
-refuses to write it unless the Engine prints the manuscript exactly. The
-Store holds 990 data columns, so the manuscript must stay under 15,840
+refuses to write a deck unless the Engine prints its manuscript exactly.
+The Store holds 990 data columns, so each manuscript must stay under 15,840
 characters. Characters above code 999 are set as HTML character references.
 
 ## Publishing on GitHub Pages

@@ -65,13 +65,14 @@ h1 { font: 400 clamp(2.2rem, 6vw, 4rem)/.95 var(--display); margin: 0; text-wrap
 }
 .true-speed:hover { background: var(--line); }
 .true-speed[hidden] { display: none; }
+.other-deck { justify-self: end; font: italic 14px/1.2 var(--italic); color: var(--line); }
 
 .works { display: grid; grid-template-columns: minmax(0, 430px) minmax(0, 1fr); gap: 28px; align-items: start; }
 @media (max-width: 900px) {
   .works { grid-template-columns: minmax(0, 1fr); }
   header.title { grid-template-columns: minmax(0, 1fr); }
   .status { justify-self: start; text-align: left; }
-  .true-speed { justify-self: start; }
+  .true-speed, .other-deck { justify-self: start; }
   .apparatus { order: -1; }
 }
 
@@ -181,6 +182,7 @@ button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
       <strong id="status-head">Raising steam</strong>
       <span id="status-line">Reading the card chain</span>
       <button type="button" class="true-speed" id="true-speed">Load at true speed</button>
+      <a class="other-deck" id="other-deck" href="?deck=manual">Run the engineer's manual</a>
     </div>
   </header>
 
@@ -267,6 +269,11 @@ galleyCss.replaceSync(`
 const KIND = { number: "number card", op: "operation card", load: "variable card", store: "variable card",
   print: "printer", comb: "combinatorial", attendant: "attendant", halt: "halt" };
 const OP_NAME = { "+": "Adding", "-": "Subtracting", "×": "Multiplying", "÷": "Dividing" };
+const DECKS = {
+  page: { file: "page.cards", title: "The Analytical Web", other: "manual", otherLabel: "Run the engineer's manual" },
+  manual: { file: "manual.cards", title: "The Engineer's Manual · The Analytical Web", other: "page", otherLabel: "Run the front page" },
+};
+const deck = DECKS[new URLSearchParams(location.search).get("deck")] ?? DECKS.page;
 
 let cards, engine, total, printed, tape, clock, speed = 3600, running = true;
 let lastData = null, lastFrame = 0, lastSheet = 0, lastCost = 0, flashUntil = 0;
@@ -444,8 +451,12 @@ function finishAt(secondsLeft) {
   return `${when.toLocaleDateString("en-US", { weekday: "long" })} at ${time}`;
 }
 
+document.title = deck.title;
+$("other-deck").href = `?deck=${deck.other}`;
+$("other-deck").textContent = deck.otherLabel;
+
 try {
-  const res = await fetch("page.cards");
+  const res = await fetch(deck.file);
   if (!res.ok) throw new Error(`The card chain could not be fetched (${res.status}).`);
   cards = parseDeck(await res.text());
   // A dry run on a second engine, to know how long the real one will take.

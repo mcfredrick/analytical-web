@@ -1,0 +1,66 @@
+<style>
+:host{display:block;background:#f4f1e8;color:#1d1c1a;padding:2.5rem clamp(1rem,4vw,3rem);font:1.05rem/1.6 "Old Standard TT",Georgia,serif}
+h1,h2{font:400 2.5rem/1.05 "IM Fell English SC",Georgia,serif;margin:0 0 .6rem;text-wrap:balance}
+h2{font-size:1.4rem;margin-top:2.2rem}
+p,ol{max-width:34em}li{margin:.3rem 0}
+table{border-collapse:collapse;margin-top:.5rem}
+td{padding:.25rem 1.2rem .25rem 0;border-bottom:1px solid #cdc5b2;vertical-align:top}
+code,pre{font:.9rem/1.45 ui-monospace,"Courier New",monospace}
+td code{white-space:nowrap}
+pre{background:#e9e3d2;padding:.7rem 1rem;max-width:34em;overflow-x:auto}
+a{color:#7a2a1c}
+</style>
+<h1>The Engineer's Manual</h1>
+<p><i>How the Analytical Engine works, and how to punch a deck for it. Printed by the Engine from {{CARDS}} cards.</i></p>
+<h2>The Store and the Mill</h2>
+<p>Babbage built the Engine in two halves. The Store is a rack of 1,000 columns, each a stack of fifty figure wheels holding one signed number. The Mill does the arithmetic. It has two ingress axes that receive numbers from the Store, an egress axis for the result and a primed egress axis that keeps the remainder of a division.</p>
+<p>When the Mill finishes it may set the run-up lever. A result that changes sign from its first operand sets it, as does an overflow past fifty digits or a division by zero. The lever is the Engine's only means of making a decision.</p>
+<h2>The cards</h2>
+<p>The Engine is driven by a chain of Jacquard cards laced together and read one at a time.</p>
+<table>
+<tr><td><code>N017 12345</code></td><td>Number card. Set column 17 to 12345.</td></tr>
+<tr><td><code>+ - × ÷</code></td><td>Operation card. Choose what the Mill does next.</td></tr>
+<tr><td><code>L017</code></td><td>Variable card. Carry column 17 to the next ingress axis. The second axis to fill starts the Mill.</td></tr>
+<tr><td><code>Z017</code></td><td>The same, and clear the column.</td></tr>
+<tr><td><code>S017</code></td><td>Store the egress axis in column 17. <code>S017'</code> stores the remainder.</td></tr>
+<tr><td><code>P</code></td><td>Print the egress axis.</td></tr>
+<tr><td><code>CF+3</code></td><td>Combinatorial card. Skip forward three cards. <code>CB</code> turns the chain back.</td></tr>
+<tr><td><code>CB?14</code></td><td>Turn back fourteen cards if the run-up lever is set.</td></tr>
+<tr><td><code>A set type</code></td><td>Attendant card. Print each number as a type sort.</td></tr>
+<tr><td><code>H</code></td><td>Halt.</td></tr>
+</table>
+<p>Lines beginning with a full stop are the operator's notes, and the reader passes over them.</p>
+<h2>A first deck</h2>
+<p>This deck adds two numbers and prints the sum.</p>
+<pre>N001 1837
+N002 1843
++
+L001
+L002
+S003
+P
+H</pre>
+<p>The number cards fill columns 1 and 2, and the operation card sets the Mill to add. The two variable cards bring both columns to the ingress axes, and the second sets the Mill turning. A second later 3680 stands on the egress axis, where <code>S003</code> keeps it and <code>P</code> prints it.</p>
+<h2>How these pages are printed</h2>
+<p>The punch reads a manuscript of HTML and turns each character into a three-digit sort. Sixteen sorts fill a column, the first character in the lowest place. Column 0 holds 1,000 and column 1 holds 0. Then for every column of text the punch repeats these fourteen cards, shown here for column 10.</p>
+<pre>÷  L010  L000  S010  S002'
++  L002  L001  P
+-  L001  L010  S003
+CB?14</pre>
+<p>Dividing the column by 1,000 leaves the next character as the remainder, which goes to column 2, and returns the rest to the column. Adding 0 to it brings the character to the egress axis for the printer. Subtracting the column from 0 gives a negative result while characters remain, so the lever is set and the chain turns back to the division. Once the column reads zero the lever stays clear and the chain runs on to the next column.</p>
+<h2>Punching a deck</h2>
+<ol>
+<li>Number your columns from 0 to 999. Each holds fifty digits and a sign.</li>
+<li>When turning the chain, count from the card after the combinatorial card. <code>CB?14</code> closing a loop of fourteen cards returns to its first card.</li>
+<li>To print text, begin with <code>A set type</code>. The type case holds sorts 1 to 999.</li>
+<li>Budget your steam. Each addition or subtraction costs a second, and each multiplication or division a minute.</li>
+</ol>
+<p>To change these pages, edit <code>manuscript.html</code> or <code>manual.html</code> and run <code>node tools/punch.mjs</code>. The punch refuses to write a deck unless the Engine prints its manuscript exactly.</p>
+<h2>Ledger</h2>
+<table>
+<tr><td>Characters</td><td>{{CHARS}}</td></tr>
+<tr><td>Punched cards</td><td>{{CARDS}}</td></tr>
+<tr><td>Divisions</td><td>{{DIVISIONS}}</td></tr>
+<tr><td>Time at rated speed</td><td>{{TIME}}</td></tr>
+</table>
+<p><a href="?deck=page">Return to the page.</a> <a href="manual.cards">Inspect this deck.</a></p>
