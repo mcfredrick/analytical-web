@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Analytical Web</title>
+<meta name="description" content="A web page calculated from punched cards on an emulated Babbage Analytical Engine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: a cyanotype engineering plate. Engine console on the left,
+   the sheet coming off the printing apparatus on the right. */
+:root {
+  --ground: #163e72;       /* Prussian blue of an 1842 cyanotype */
+  --ground-deep: #0e2a50;
+  --line: #eaf0f7;         /* the white of the drawing */
+  --dim: #a8bcd7;
+  --rule: #4b6d9c;
+  --paper: #f2eee3;        /* pasteboard of the cards */
+  --ink: #1d1c1a;
+  --amber: #f2c15b;        /* the card under the reading rods */
+  --display: "IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --italic: "IM Fell English", "Iowan Old Style", Georgia, serif;
+  --body: "Old Standard TT", "Iowan Old Style", Georgia, serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--ground-deep); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--line);
+  font: 15px/1.5 var(--body);
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.07), transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(0,0,0,.25), transparent 60%),
+    linear-gradient(var(--rule) 1px, transparent 1px) 0 0 / 100% 32px,
+    var(--ground);
+  background-blend-mode: normal, normal, soft-light, normal;
+  padding-inline: max(16px, env(safe-area-inset-left, 0px));
+  padding-block: max(20px, env(safe-area-inset-top, 0px)) max(40px, env(safe-area-inset-bottom, 0px));
+}
+.plate { max-width: 1240px; margin: 0 auto; display: grid; gap: 28px; }
+
+/* Title block, as on an engineering drawing */
+header.title {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 32px; align-items: end;
+  border: 1.5px solid var(--line); outline: 1px solid var(--line); outline-offset: 4px;
+  padding: 22px 26px; margin: 5px;
+}
+.eyebrow { font: 13px/1 var(--display); letter-spacing: .14em; color: var(--dim); margin: 0 0 10px; }
+h1 { font: 400 clamp(2.2rem, 6vw, 4rem)/.95 var(--display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
+.lede { font: italic 1.12rem/1.45 var(--italic); color: var(--dim); max-width: 46em; margin: 12px 0 0; }
+.lede b { font-style: normal; color: var(--line); font-weight: 400; font-family: var(--body); }
+.status {
+  justify-self: end; text-align: right; font: 13px/1.4 var(--body); color: var(--dim);
+  display: grid; gap: 6px; min-width: 0;
+}
+.status strong { font: 400 1.25rem/1 var(--display); letter-spacing: .06em; color: var(--amber); }
+.status.done strong { color: var(--line); }
+.true-speed {
+  justify-self: end; margin-top: 6px; font: 400 14px/1.2 var(--display); letter-spacing: .08em;
+  color: var(--ground); background: var(--amber); border: 0; border-radius: 2px; padding: 9px 13px; cursor: pointer;
+}
+.true-speed:hover { background: var(--line); }
+.true-speed[hidden] { display: none; }
+
+.works { display: grid; grid-template-columns: minmax(0, 430px) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 900px) {
+  .works { grid-template-columns: minmax(0, 1fr); }
+  header.title { grid-template-columns: minmax(0, 1fr); }
+  .status { justify-self: start; text-align: left; }
+  .true-speed { justify-self: start; }
+  .apparatus { order: -1; }
+}
+
+.console { display: grid; gap: 22px; min-width: 0; }
+.part { min-width: 0; }
+.part h2 {
+  font: 400 1.05rem/1 var(--display); letter-spacing: .12em; margin: 0 0 10px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.part h2::after { content: ""; flex: 1; border-bottom: 1px dashed var(--rule); transform: translateY(-4px); }
+.part h2 small { font: italic 13px/1 var(--italic); letter-spacing: 0; color: var(--dim); order: 2; }
+
+/* The card chain */
+.chain { display: grid; gap: 7px; position: relative; padding-left: 22px; }
+.chain::before { /* the lacing that binds Jacquard cards into a chain */
+  content: ""; position: absolute; left: 7px; top: 4px; bottom: 4px;
+  border-left: 2px dotted var(--dim);
+}
+.card {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center;
+  background: var(--paper); color: var(--ink); padding: 6px 10px 6px 12px; min-height: 40px;
+  border-radius: 2px; opacity: .55; transition: opacity .15s;
+  box-shadow: 0 1px 0 rgba(0,0,0,.35);
+}
+.card::before { content: ""; position: absolute; left: -19px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; border: 1.5px solid var(--dim); background: var(--ground); }
+.card.now { opacity: 1; outline: 2px solid var(--amber); outline-offset: 2px; }
+.card.now::before { background: var(--amber); border-color: var(--amber); }
+.card.past { opacity: .32; }
+.card code { font: 700 14px/1.2 var(--body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; letter-spacing: .02em; }
+.card .kind { font: italic 12px/1 var(--italic); color: #6a6250; }
+.holes { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+.holes i { height: 4px; border-radius: 2px; background: transparent; }
+.holes i.p { background: var(--ground-deep); }
+
+/* Mill and Store */
+.axes { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+.axis { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.axis dt { font: italic 13.5px/1.3 var(--italic); color: var(--dim); margin: 0; }
+.axis dt b { font: 400 12px/1 var(--display); letter-spacing: .1em; color: var(--line); display: block; font-style: normal; }
+.axis dd { margin: 0; font: 15px/1.35 var(--body); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: right; letter-spacing: .02em; }
+.axis dd.op { font: 1.6rem/1 var(--body); }
+.axis.flash dd { color: var(--amber); }
+.lever { display: inline-flex; gap: 8px; align-items: center; }
+.lever::before { content: ""; width: 26px; height: 10px; border: 1.5px solid var(--line); border-radius: 6px; background: linear-gradient(90deg, var(--line) 0 9px, transparent 9px); transition: background .1s; }
+.lever.set::before { background: linear-gradient(90deg, transparent 0 14px, var(--amber) 14px); border-color: var(--amber); }
+.busy { height: 3px; background: var(--rule); margin-top: 8px; overflow: hidden; }
+.busy span { display: block; height: 100%; width: 0; background: var(--amber); }
+
+.column-active { margin-top: 12px; }
+.column-active p { margin: 0 0 8px; font: italic 13.5px/1.35 var(--italic); color: var(--dim); }
+.wheels { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; direction: rtl; }
+.wheel { direction: ltr; border: 1px solid var(--rule); text-align: center; padding: 4px 0 3px; font-variant-numeric: tabular-nums; }
+.wheel b { display: block; font: 14px/1.1 var(--body); }
+.wheel i { display: block; font: 12px/1.2 var(--body); color: var(--dim); font-style: normal; min-height: 1.2em; white-space: pre; }
+.wheel.next { border-color: var(--amber); }
+.wheel.next b { color: var(--amber); }
+.wheel.empty { opacity: .25; }
+
+/* Regulator and gauges */
+.ledger { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 0; }
+.ledger div { min-width: 0; }
+.ledger dt { font: 400 11.5px/1.2 var(--display); letter-spacing: .12em; color: var(--dim); }
+.ledger dd { margin: 3px 0 0; font: 1.15rem/1.25 var(--body); font-variant-numeric: tabular-nums; }
+.ledger .wide { grid-column: 1 / -1; }
+.regulator { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.regulator button, .controls button {
+  font: 14px/1 var(--body); color: var(--line); background: transparent; border: 1px solid var(--dim);
+  padding: 8px 11px; border-radius: 2px; cursor: pointer;
+}
+.regulator button[aria-pressed="true"] { background: var(--line); color: var(--ground); border-color: var(--line); }
+.regulator button:hover, .controls button:hover { border-color: var(--line); }
+button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.note { font: italic 13px/1.45 var(--italic); color: var(--dim); margin: 10px 0 0; }
+
+/* Printing apparatus */
+.apparatus { min-width: 0; display: grid; gap: 14px; }
+.tape {
+  font: 14px/1 var(--body); font-variant-numeric: tabular-nums; color: var(--ink); background: var(--paper);
+  padding: 9px 12px; white-space: nowrap; overflow: hidden; display: flex; gap: 14px; justify-content: flex-end;
+  border-top: 2px dotted var(--ground); border-bottom: 2px dotted var(--ground); min-height: 40px; align-items: center;
+}
+.tape span { flex: none; display: grid; text-align: center; gap: 3px; }
+.tape span small { font-size: 11px; color: #6a6250; white-space: pre; }
+.tape span:last-child { color: #7a2a1c; font-weight: 700; }
+.sheet-wrap { position: relative; background: var(--paper); box-shadow: 0 2px 0 rgba(0,0,0,.25), 0 18px 40px -20px rgba(0,0,0,.6); min-height: 240px; }
+.sheet-wrap::after { /* the platen line where type is being set */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--amber); opacity: .85;
+}
+.sheet-wrap.done::after { display: none; }
+.sheet-label { font: italic 13px/1.4 var(--italic); color: var(--dim); margin: 0; }
+
+.error { background: #5c1a14; color: var(--line); padding: 12px 14px; border: 1px solid #c45a46; }
+
+@media (prefers-reduced-motion: reduce) { .card, .lever::before { transition: none; } }
+</style>
+</head>
+<body>
+<div class="plate">
+  <header class="title">
+    <div>
+      <p class="eyebrow">Plate of the Engine in operation</p>
+      <h1>The Analytical Web</h1>
+      <p class="lede">This page is not stored as HTML. It is a chain of <b id="deck-size">punched cards</b> for Charles Babbage's Analytical Engine of 1837, running on an emulated Mill and Store. Every character you read is the remainder of a fifty-digit division.</p>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite">
+      <strong id="status-head">Raising steam</strong>
+      <span id="status-line">Reading the card chain</span>
+      <button type="button" class="true-speed" id="true-speed">Load at true speed</button>
+    </div>
+  </header>
+
+  <noscript><p class="error">The Engine is driven by steam, which in this century is called JavaScript. Without it there is nothing to print. The deck itself is at <a href="page.cards" style="color:inherit">page.cards</a>.</p></noscript>
+
+  <main class="works">
+    <div class="console">
+      <section class="part" aria-labelledby="h-chain">
+        <h2 id="h-chain">Card chain <small id="chain-pos">card 0</small></h2>
+        <div class="chain" id="chain"></div>
+      </section>
+
+      <section class="part" aria-labelledby="h-mill">
+        <h2 id="h-mill">The Mill</h2>
+        <dl class="axes">
+          <div class="axis"><dt><b>Operation</b>card in force</dt><dd class="op" id="m-op">+</dd></div>
+          <div class="axis"><dt><b>Ingress I</b>first axis</dt><dd id="m-a">0</dd></div>
+          <div class="axis"><dt><b>Ingress II</b>second axis</dt><dd id="m-b">0</dd></div>
+          <div class="axis" id="ax-e"><dt><b>Egress</b>result</dt><dd id="m-e">0</dd></div>
+          <div class="axis"><dt><b>Egress′</b>remainder</dt><dd id="m-r">0</dd></div>
+          <div class="axis"><dt><b>Run-up lever</b>sign or overflow</dt><dd><span class="lever" id="m-lever">clear</span></dd></div>
+        </dl>
+        <div class="busy" aria-hidden="true"><span id="m-busy"></span></div>
+      </section>
+
+      <section class="part" aria-labelledby="h-store">
+        <h2 id="h-store">The Store <small>1,000 columns of 50 digits</small></h2>
+        <dl class="axes">
+          <div class="axis"><dt><b>V000</b>divisor</dt><dd id="s0">0</dd></div>
+          <div class="axis"><dt><b>V001</b>zero</dt><dd id="s1">0</dd></div>
+          <div class="axis"><dt><b>V002</b>remainder</dt><dd id="s2">0</dd></div>
+        </dl>
+        <div class="column-active">
+          <p id="col-label">Data column, read right to left in sorts of three digits.</p>
+          <div class="wheels" id="wheels"></div>
+        </div>
+      </section>
+
+      <section class="part" aria-labelledby="h-reg">
+        <h2 id="h-reg">Regulator</h2>
+        <dl class="ledger">
+          <div><dt>Engine time</dt><dd id="g-time">0 seconds</dd></div>
+          <div><dt>Cards read</dt><dd id="g-cards">0</dd></div>
+          <div><dt>Divisions</dt><dd id="g-div">0</dd></div>
+          <div><dt>Characters printed</dt><dd id="g-chars">0</dd></div>
+          <div class="wide"><dt>Remaining at this speed</dt><dd id="g-eta">…</dd></div>
+        </dl>
+        <div class="regulator" role="group" aria-label="Engine speed">
+          <button type="button" id="sp-1" data-speed="1">True speed</button>
+          <button type="button" id="sp-60" data-speed="60">A minute a second</button>
+          <button type="button" id="sp-3600" data-speed="3600">An hour a second</button>
+          <button type="button" id="sp-86400" data-speed="86400">A day a second</button>
+        </div>
+        <div class="controls">
+          <button type="button" id="pause">Stop the engine</button>
+          <button type="button" id="restart">Start from the first card</button>
+        </div>
+        <p class="note">Link to <a href="#true-speed" style="color:inherit">#true-speed</a> to make a friend wait the full time. Babbage rated the Engine at sixty additions a minute and one fifty-digit division a minute. At rated speed this page takes <span id="full-time">some time</span>.</p>
+      </section>
+    </div>
+
+    <section class="apparatus" aria-labelledby="h-print">
+      <div class="part">
+        <h2 id="h-print">Printing apparatus <small>numerals as struck</small></h2>
+        <div class="tape" id="tape" aria-hidden="true"></div>
+      </div>
+      <p class="sheet-label">The sheet, as the compositor sets each numeral in type:</p>
+      <div class="sheet-wrap" id="sheet-wrap"><div id="sheet"></div></div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { parseDeck, Engine, formatDuration, SECONDS } from "./engine.js";
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => n.toLocaleString("en-US");
+const sheet = $("sheet").attachShadow({ mode: "open" });
+const galleyCss = new CSSStyleSheet();
+galleyCss.replaceSync(`
+  :host { display: block; }
+  .galley { margin: 0; padding: 20px; color: #4a4536; font: 13px/1.5 ui-monospace, "Courier New", monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .galley::before { content: "Galley proof. The stylesheet is still coming off the printer; the page takes its shape when it closes."; display: block; font: italic 14px/1.4 var(--italic); color: #7a2a1c; margin-bottom: 10px; white-space: normal; }`);
+const KIND = { number: "number card", op: "operation card", load: "variable card", store: "variable card",
+  print: "printer", comb: "combinatorial", attendant: "attendant", halt: "halt" };
+const OP_NAME = { "+": "Adding", "-": "Subtracting", "×": "Multiplying", "÷": "Dividing" };
+
+let cards, engine, total, printed, tape, clock, speed = 3600, running = true;
+let lastData = null, lastFrame = 0, lastSheet = 0, lastCost = 0, flashUntil = 0;
+
+function groups(v) {
+  const neg = v < 0n; let s = (neg ? -v : v).toString();
+  s = s.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return (neg ? "−" : "") + s;
+}
+function glyph(n) {
+  if (n === 10) return "↵"; if (n === 32) return "␣"; if (n === 9) return "⇥";
+  return n > 32 ? String.fromCharCode(n) : "";
+}
+function holesFor(text) {
+  let h = 2166136261;
+  for (const c of text) h = Math.imul(h ^ c.codePointAt(0), 16777619);
+  let out = "";
+  for (let i = 0; i < 24; i++) { h = Math.imul(h ^ (h >>> 13), 0x5bd1e995); out += `<i class="${(h >>> 7) & 1 ? "p" : ""}"></i>`; }
+  return out;
+}
+const holeCache = new Map();
+function cardHtml(card, cls) {
+  if (!holeCache.has(card.text)) holeCache.set(card.text, holesFor(card.text));
+  const shown = card.kind === "number" ? `N${String(card.col).padStart(3, "0")} ${groups(card.value)}` : card.text;
+  return `<div class="card ${cls}"><code>${shown}</code><span class="kind">${KIND[card.kind]}</span><div class="holes">${holeCache.get(card.text)}</div></div>`;
+}
+
+function start() {
+  printed = ""; tape = []; clock = 0; lastData = null; lastCost = 0;
+  engine = new Engine(cards, { onPrint(v) { const n = Number(v); printed += String.fromCharCode(n); tape.push(n); } });
+  $("sheet-wrap").classList.remove("done");
+  $("status").classList.remove("done");
+  sheet.innerHTML = "";
+  setRunning(true);
+}
+
+function setRunning(on) {
+  running = on;
+  $("pause").textContent = on ? "Stop the engine" : "Let in the steam";
+}
+
+function setSpeed(s) {
+  speed = s;
+  document.querySelectorAll(".regulator button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.speed === s)));
+}
+
+function tick(now) {
+  const dt = Math.min(1, (now - (lastFrame || now)) / 1000);
+  lastFrame = now;
+  if (running && !engine.halted) {
+    clock += dt * speed;
+    let steps = 0;
+    while (!engine.halted && engine.stats.seconds <= clock && steps < 50000) {
+      const r = engine.step(); steps++;
+      if (!r) break;
+      if (r.card.kind === "load" && r.card.col >= 10) lastData = r.card.col;
+      if (r.card.kind === "number" && r.card.col >= 10) lastData = r.card.col;
+      if (r.cost) { lastCost = r.cost; flashUntil = now + 120; }
+    }
+    if (engine.halted) clock = engine.stats.seconds;
+  }
+  render(now);
+  requestAnimationFrame(tick);
+}
+
+function render(now) {
+  const e = engine, st = e.stats;
+  // Card chain: the card just read sits under the reading rods.
+  const cur = Math.max(0, Math.min(cards.length - 1, e.pc - 1));
+  let html = "";
+  for (let i = cur - 2; i <= cur + 4; i++) {
+    if (i < 0 || i >= cards.length) continue;
+    html += cardHtml(cards[i], i < cur ? "past" : i === cur ? "now" : "");
+  }
+  $("chain").innerHTML = html;
+  $("chain-pos").textContent = `card ${fmt(cur + 1)} of ${fmt(cards.length)}`;
+
+  // Mill
+  $("m-op").textContent = e.op;
+  $("m-a").textContent = groups(e.lastIngress[0]);
+  $("m-b").textContent = groups(e.lastIngress[1]);
+  $("m-e").textContent = groups(e.egress);
+  $("m-r").textContent = groups(e.egressPrime);
+  $("ax-e").classList.toggle("flash", now < flashUntil && speed < 3600);
+  const lever = $("m-lever");
+  lever.classList.toggle("set", e.lever);
+  lever.textContent = e.lever ? "set" : "clear";
+  const owed = Math.max(0, e.stats.seconds - clock);
+  $("m-busy").style.width = lastCost && owed > 0 ? `${(1 - owed / lastCost) * 100}%` : "0%";
+
+  // Store
+  $("s0").textContent = groups(e.store[0]);
+  $("s1").textContent = groups(e.store[1]);
+  $("s2").textContent = groups(e.store[2]);
+  if (lastData !== null) {
+    const v = e.store[lastData];
+    const sorts = []; let x = v;
+    while (x > 0n) { sorts.push(Number(x % 1000n)); x /= 1000n; }
+    let w = "";
+    for (let i = 0; i < 16; i++) {
+      const n = sorts[i];
+      w += n === undefined
+        ? `<div class="wheel empty"><b>000</b><i> </i></div>`
+        : `<div class="wheel${i === 0 ? " next" : ""}"><b>${String(n).padStart(3, "0")}</b><i>${glyph(n).replace(/[<&]/g, (c) => c === "<" ? "&lt;" : "&amp;")}</i></div>`;
+    }
+    $("wheels").innerHTML = w;
+    $("col-label").textContent = `V${String(lastData).padStart(3, "0")}, data column. Each sort of three digits is one character; the Mill takes them from the right.`;
+  }
+
+  // Gauges
+  $("g-time").textContent = formatDuration(st.seconds);
+  $("g-cards").textContent = fmt(st.cards);
+  $("g-div").textContent = fmt(st["÷"]);
+  $("g-chars").textContent = `${fmt(st.printed)} of ${fmt(total.printed)}`;
+  const left = Math.max(0, total.seconds - clock);
+  $("g-eta").textContent = e.halted ? "Nothing. The page is complete."
+    : speed === 1 ? `${formatDuration(left)}. Expect the page ${finishAt(left)}.`
+    : `${formatDuration(left / speed)} (${formatDuration(left)} of engine time)`;
+  $("true-speed").hidden = speed === 1 && !e.halted;
+
+  // Tape
+  $("tape").innerHTML = tape.slice(-14).map((n) => `<span>${String(n).padStart(3, "0")}<small>${glyph(n).replace(/[<&]/g, (c) => c === "<" ? "&lt;" : "&amp;") || " "}</small></span>`).join("");
+
+  // Status
+  if (e.error) {
+    $("status-head").textContent = "Engine fault";
+    $("status-line").textContent = e.error;
+  } else if (e.halted) {
+    $("status").classList.add("done");
+    $("status-head").textContent = "Engine halted";
+    $("status-line").textContent = `Page complete after ${formatDuration(st.seconds)} of steam`;
+  } else if (!running) {
+    $("status-head").textContent = "Engine stopped";
+    $("status-line").textContent = "Steam shut off at the regulator";
+  } else if (speed === 1) {
+    $("status-head").textContent = "At true speed";
+    $("status-line").textContent = `Expect the page ${finishAt(Math.max(0, total.seconds - clock))}. Do not close this tab.`;
+  } else {
+    $("status-head").textContent = st["÷"] ? `${OP_NAME[e.op]}` : "Loading the Store";
+    $("status-line").textContent = lastData !== null && st["÷"]
+      ? `Column V${String(lastData).padStart(3, "0")}, character ${fmt(st.printed + 1)}`
+      : `Number card ${fmt(Math.max(0, e.pc - 4))}`;
+  }
+
+  // The sheet is re-set by the compositor a few times a second.
+  if (e.halted || now - lastSheet > 120) {
+    if (sheet.__len !== printed.length) {
+      // Until the stylesheet is closed, show the raw galley rather than a blank sheet.
+      const openStyle = !printed || (printed.includes("<style") && !printed.includes("</style>"));
+      sheet.innerHTML = openStyle
+        ? `<pre class="galley"></pre>`
+        : printed;
+      if (openStyle) { sheet.querySelector("pre").textContent = printed; sheet.adoptedStyleSheets = [galleyCss]; }
+      else sheet.adoptedStyleSheets = [];
+      sheet.__len = printed.length;
+    }
+    lastSheet = now;
+    $("sheet-wrap").classList.toggle("done", e.halted);
+  }
+}
+
+document.querySelectorAll(".regulator button").forEach((b) => b.addEventListener("click", () => setSpeed(+b.dataset.speed)));
+$("pause").addEventListener("click", () => { if (engine.halted) return; setRunning(!running); });
+$("restart").addEventListener("click", start);
+// True speed starts again from the first card, as Babbage would have insisted.
+$("true-speed").addEventListener("click", () => { setSpeed(1); start(); });
+addEventListener("hashchange", () => { if (location.hash === "#true-speed") { setSpeed(1); start(); } });
+
+function finishAt(secondsLeft) {
+  const when = new Date(Date.now() + secondsLeft * 1000);
+  const days = Math.round((new Date(when).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 864e5);
+  const time = when.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  if (days === 0) return `at ${time} today`;
+  if (days === 1) return `at ${time} tomorrow`;
+  return `${when.toLocaleDateString("en-US", { weekday: "long" })} at ${time}`;
+}
+
+try {
+  const res = await fetch("page.cards");
+  if (!res.ok) throw new Error(`The card chain could not be fetched (${res.status}).`);
+  cards = parseDeck(await res.text());
+  // A dry run on a second engine, to know how long the real one will take.
+  const dry = new Engine(cards);
+  while (!dry.halted) dry.step();
+  total = dry.stats;
+  $("deck-size").textContent = `${fmt(cards.length)} punched cards`;
+  $("full-time").textContent = formatDuration(total.seconds);
+  setSpeed(location.hash === "#true-speed" ? 1 : speed);
+  start();
+  requestAnimationFrame(tick);
+} catch (err) {
+  $("status-head").textContent = "Engine fault";
+  $("status-line").textContent = err.message;
+}
+</script>
+</body>
+</html>

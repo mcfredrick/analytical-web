@@ -1,0 +1,39 @@
+<style>
+:host{display:block;background:#f4f1e8;color:#1d1c1a;padding:2.5rem clamp(1rem,4vw,3rem);font:1.05rem/1.6 "Old Standard TT",Georgia,serif}
+h1,h2{font:400 2.5rem/1.05 "IM Fell English SC",Georgia,serif;margin:0 0 .6rem;text-wrap:balance}
+h2{font-size:1.4rem;margin-top:2.2rem}
+p,ol{max-width:34em}li{margin:.3rem 0}
+table{border-collapse:collapse;margin-top:.5rem}
+td{padding:.25rem 1.2rem .25rem 0;border-bottom:1px solid #cdc5b2;vertical-align:top}
+td+td{font-variant-numeric:tabular-nums}
+a{color:#7a2a1c}
+</style>
+<h1>A Page of Steam</h1>
+<p><i>Printed by the Analytical Engine, designed by Charles Babbage in 1837 and never built.</i></p>
+<p>A modern web page arrives as megabytes of script, assembled by machinery you never see. This one arrives as a deck of punched cards and is calculated in front of you, one division at a time, on the machine Ada Lovelace wrote her famous program for.</p>
+<h2>Why it went out of style</h2>
+<p>The Engine was never finished. The Treasury had spent £17,000 on Babbage's previous engine before giving up in 1842. The Analytical Engine needed thousands of parts cut by hand, and every program had to be punched card by card by an attendant. Labour was the bottleneck, and labour was dear.</p>
+<h2>Why it works again</h2>
+<ol>
+<li>Punching is free. The punch is now a script, and it never tires of repeating the same fourteen cards.</li>
+<li>The Mill is free. It runs on your computer, so the Treasury need not be consulted.</li>
+<li>The steam never left. Much of the world's electricity still comes from steam turbines, so this page is steam-powered, at one remove.</li>
+</ol>
+<h2>How it is made</h2>
+<ol>
+<li>A punching script turns this page into numbers: three digits a character, sixteen characters to each fifty-digit column of the Store.</li>
+<li>The Mill divides a column by 1,000. The remainder is the next character; the quotient goes back to the Store.</li>
+<li>The printing apparatus records each remainder, and a compositor (your browser) sets it in type.</li>
+<li>A combinatorial card turns the chain back until the column reads zero.</li>
+</ol>
+<p>The Engine had no index registers, so the same fourteen cards are repeated for every column with the column numbers changed.</p>
+<h2>Ledger</h2>
+<table>
+<tr><td>Characters</td><td>{{CHARS}}</td></tr>
+<tr><td>Store columns used</td><td>{{COLUMNS}} of 1,000</td></tr>
+<tr><td>Punched cards</td><td>{{CARDS}}</td></tr>
+<tr><td>Divisions</td><td>{{DIVISIONS}}</td></tr>
+<tr><td>Time at rated speed</td><td>{{TIME}}</td></tr>
+</table>
+<p>Babbage rated the Engine at sixty additions a minute and one fifty-digit division a minute. Each character above cost about a minute of steam, so we kept the stylesheet short.</p>
+<p>Nothing is cached. Visit again and the Engine starts from the first card. <a href="page.cards">Inspect the deck.</a></p>
