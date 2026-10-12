@@ -9,22 +9,12 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parseDeck, Engine, formatDuration, COLUMNS } from "../engine.js";
+import { toTypeCase } from "./type-case.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CHARS_PER_COLUMN = 16;   // 16 × 3 digits = 48 of the column's 50
 const FIRST_DATA_COLUMN = 10;
 const MANUSCRIPTS = [["manuscript.html", "page.cards"], ["manual.html", "manual.cards"]];
-
-// The type case holds sorts numbered 1–999. Anything outside it is set as an
-// HTML character reference built from sorts that are in the case.
-function toTypeCase(text) {
-  let out = "";
-  for (const ch of text.replace(/\r/g, "")) {
-    const code = ch.codePointAt(0);
-    out += code >= 1 && code <= 999 ? ch : `&#${code};`;
-  }
-  return out;
-}
 
 function punch(text, name) {
   const columns = [];

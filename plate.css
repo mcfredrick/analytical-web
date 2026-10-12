@@ -95,5 +95,10 @@ button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .note { font: italic 13px/1.45 var(--italic); color: var(--dim); margin: 10px 0 0; }
 .apparatus { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.sheet-wrap { position: relative; background: var(--paper); box-shadow: 0 2px 0 rgba(0,0,0,.25), 0 18px 40px -20px rgba(0,0,0,.6); min-height: 240px; }
+.sheet-wrap::after { /* the platen line where type is being set */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--amber); opacity: .85;
+}
+.sheet-wrap.done::after { display: none; }
 .sheet-label { font: italic 13px/1.4 var(--italic); color: var(--dim); margin: 0; }
 .error { background: #5c1a14; color: var(--line); padding: 12px 14px; border: 1px solid #c45a46; }

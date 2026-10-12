@@ -31,6 +31,13 @@ a half.
 | `loom.cards` | The punched deck the loom weaves |
 | `loom.txt` | The text woven into the plate |
 | `tools/punch-loom.mjs` | The loom's card punch |
+| `counting-board.html` | The counting board's console and the scribe's copy |
+| `board.js` | The Roman counting board: lines, spaces, pebbles and the reckoner |
+| `board.tablet` | The wax tablet of Roman numerals the board works through |
+| `board-manuscript.html` | The manuscript the tablet is written from |
+| `tools/punch-board.mjs` | Writes the tablet |
+| `sheet.js` | The sheet each machine's output is set on |
+| `tools/type-case.mjs` | Sets characters above code 999 as HTML character references |
 
 ## Changing the page
 
@@ -56,6 +63,19 @@ node tools/punch-loom.mjs
 The punch sets the text in a five-thread type, binds it in five-end satin
 and refuses to write the deck unless the loom weaves the design exactly.
 The type case holds capitals, figures and a little punctuation.
+
+## Changing the counting board's page
+
+Edit `board-manuscript.html`, then write a fresh tablet:
+
+```sh
+node tools/punch-board.mjs
+```
+
+Each tablet line is the difference between one character code and the
+last, in additive Roman numerals (`+ XIIII`, `- VIIII`, or `NIHIL` for a
+repeat). The tool refuses to write the tablet unless the scribe's copy
+matches the manuscript exactly.
 
 ## Publishing on GitHub Pages
 

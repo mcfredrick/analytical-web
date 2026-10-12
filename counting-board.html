@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Counting Board · The Analytical Web</title>
+<meta name="description" content="A web page reckoned in pebbles on an emulated Roman counting board and copied out by a scribe.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="plate.css">
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://traffic.dayjob.dev/js/pa-8Ul0WavDb8Bure2CMTX3A.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
+<style>
+/* The wax tablet, scratched with a stylus. */
+.tablet { background: #3b2f1e; border: 6px solid #6b5233; border-radius: 3px; padding: 8px 12px; display: grid; gap: 2px; }
+.tablet div { display: grid; grid-template-columns: 4.5em minmax(0, 1fr); gap: 10px; font: 15px/1.5 var(--body); color: #d9c49a; opacity: .45; letter-spacing: .06em; }
+.tablet div b { font: italic 12px/1.9 var(--italic); color: #a8916a; letter-spacing: 0; text-align: right; font-weight: 400; }
+.tablet div.now { opacity: 1; color: var(--amber); }
+
+.board-svg { display: block; width: 100%; height: auto; background: var(--paper); border-radius: 2px; }
+.board-svg line { stroke: #3a3428; stroke-width: 1.5; }
+.board-svg text { font: 15px var(--display); fill: #6a6250; }
+.board-svg .pebble { fill: #4a4536; }
+.board-svg .pebble.moved { fill: #b5762a; }
+.reading { margin: 10px 0 0; font: 15px/1.4 var(--body); color: var(--dim); }
+.reading b { color: var(--line); font-weight: 400; letter-spacing: .06em; }
+
+.log { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.log li { font: italic 14px/1.35 var(--italic); color: var(--dim); opacity: .55; }
+.log li:last-child { opacity: 1; color: var(--line); }
+</style>
+</head>
+<body>
+<div class="plate">
+  <nav class="machines" aria-label="Machines">
+    <a href="./">The Analytical Engine</a>
+    <a href="loom.html">The Jacquard Loom</a>
+    <a href="counting-board.html" aria-current="page">The Counting Board</a>
+  </nav>
+  <header class="title">
+    <div>
+      <p class="eyebrow">Plate of the board in use</p>
+      <h1>The Counting Board</h1>
+      <p class="lede">This page is not stored as HTML. It is a wax tablet of <b id="tablet-size">Roman numerals</b>, worked in pebbles on a counting board. Every letter you read is a number the reckoner called out and a scribe copied down.</p>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite">
+      <strong id="status-head">Clearing the board</strong>
+      <span id="status-line">Smoothing the wax</span>
+    </div>
+  </header>
+
+  <noscript><p class="error">The reckoner's hand is moved by JavaScript. Without it nothing is copied. The tablet itself is at <a href="board.tablet" style="color:inherit">board.tablet</a>.</p></noscript>
+
+  <main class="works">
+    <div class="console">
+      <section class="part" aria-labelledby="h-tablet">
+        <h2 id="h-tablet">The tablet <small id="tablet-pos">line 0</small></h2>
+        <div class="tablet" id="tablet" aria-hidden="true"></div>
+      </section>
+
+      <section class="part" aria-labelledby="h-board">
+        <h2 id="h-board">The board</h2>
+        <svg class="board-svg" id="board" viewBox="0 0 400 214" role="img" aria-label="The counting board"></svg>
+        <p class="reading">The board reads <b id="reading">nothing</b> <span id="reading-n"></span></p>
+      </section>
+
+      <section class="part" aria-labelledby="h-hand">
+        <h2 id="h-hand">The reckoner's hand</h2>
+        <ol class="log" id="log"></ol>
+      </section>
+
+      <section class="part" aria-labelledby="h-reg">
+        <h2 id="h-reg">Regulator</h2>
+        <dl class="ledger">
+          <div><dt>Time at the board</dt><dd id="g-time">0 seconds</dd></div>
+          <div><dt>Pebble moves</dt><dd id="g-moves">0</dd></div>
+          <div class="wide"><dt>Letters copied</dt><dd id="g-chars">0</dd></div>
+          <div class="wide"><dt>Remaining at this speed</dt><dd id="g-eta">…</dd></div>
+        </dl>
+        <div class="regulator" role="group" aria-label="Reckoning speed">
+          <button type="button" data-speed="1">A move a second</button>
+          <button type="button" data-speed="60">A minute a second</button>
+          <button type="button" data-speed="3600">An hour a second</button>
+        </div>
+        <div class="controls">
+          <button type="button" id="pause">Rest the hand</button>
+          <button type="button" id="restart">Clear the board</button>
+        </div>
+        <p class="note">No ancient source rates a reckoner, so the board allows one second for every pebble moved. At that pace this page takes <span id="full-time">some time</span>.</p>
+      </section>
+    </div>
+
+    <section class="apparatus" aria-labelledby="h-copy">
+      <div class="part">
+        <h2 id="h-copy">The scribe's copy <small>letter by letter</small></h2>
+      </div>
+      <div class="sheet-wrap" id="sheet-wrap"><div id="sheet"></div></div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { parseTablet, toNumeral, Board, PLACES } from "./board.js";
+import { formatDuration } from "./engine.js";
+import { compositor } from "./sheet.js";
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => n.toLocaleString("en-US");
+const setSheet = compositor($("sheet"));
+// Height of each place on the board, from the I line at the bottom to the D space at the top.
+const ROW_Y = [190, 160, 130, 100, 70, 40];
+
+let entries, board, copied, log, clock, total, speed = 60, running = true, lastSheet = 0, moved = -1;
+
+function start() {
+  copied = ""; log = []; clock = 0; moved = -1;
+  board = new Board(entries, { onWrite(code) { copied += String.fromCharCode(code); } });
+  setSheet("");
+  $("sheet-wrap").classList.remove("done");
+  $("status").classList.remove("done");
+  setRunning(true);
+}
+
+function setRunning(on) {
+  running = on;
+  $("pause").textContent = on ? "Rest the hand" : "Take up the pebbles";
+}
+
+function setSpeed(s) {
+  speed = s;
+  document.querySelectorAll(".regulator button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.speed === s)));
+}
+
+function tick(last) {
+  return (now) => {
+    const dt = Math.min(1, (now - (last ?? now)) / 1000);
+    if (running && !board.done) {
+      clock += dt * speed;
+      let steps = 0;
+      while (!board.done && board.stats.seconds < clock && steps++ < 20000) {
+        const prior = board.counts.slice();
+        const move = board.step();
+        moved = board.counts.findIndex((n, i) => n !== prior[i]);
+        log.push(move.say);
+      }
+      if (board.done) clock = board.stats.seconds;
+      if (log.length > 6) log = log.slice(-6);
+    }
+    render(now);
+    requestAnimationFrame(tick(now));
+  };
+}
+
+function drawBoard() {
+  let svg = "";
+  PLACES.forEach((p, i) => {
+    const y = ROW_Y[i];
+    if (p.line) svg += `<line x1="44" x2="390" y1="${y}" y2="${y}"/>`;
+    svg += `<text x="14" y="${y + 5}" ${p.line ? "" : 'opacity=".55"'}>${p.name}</text>`;
+    for (let k = 0; k < board.counts[i]; k++) {
+      svg += `<circle class="pebble${i === moved ? " moved" : ""}" cx="${70 + k * 30}" cy="${y}" r="11"/>`;
+    }
+  });
+  $("board").innerHTML = svg;
+}
+
+function render(now) {
+  const cur = Math.min(board.pc, entries.length - 1);
+  let rows = "";
+  for (let i = cur - 2; i <= cur + 4; i++) {
+    if (i < 0 || i >= entries.length) continue;
+    rows += `<div class="${i === cur ? "now" : ""}"><b>line ${fmt(i + 1)}</b>${entries[i].text.replace("-", "−")}</div>`;
+  }
+  $("tablet").innerHTML = rows;
+  $("tablet-pos").textContent = `line ${fmt(cur + 1)} of ${fmt(entries.length)}`;
+
+  drawBoard();
+  const v = board.value;
+  $("reading").textContent = toNumeral(v) || "nothing";
+  $("reading-n").textContent = v ? `(${v})` : "";
+  $("log").innerHTML = log.map((s) => `<li>${s}</li>`).join("");
+
+  $("g-time").textContent = formatDuration(board.stats.seconds);
+  $("g-moves").textContent = `${fmt(board.stats.moves)} of ${fmt(total.moves)}`;
+  $("g-chars").textContent = `${fmt(board.stats.written)} of ${fmt(entries.length)}`;
+  const left = Math.max(0, total.seconds - clock);
+  $("g-eta").textContent = board.done ? "Nothing. The page is copied." : `${formatDuration(left / speed)} (${formatDuration(left)} at the board)`;
+
+  if (board.done) {
+    $("status").classList.add("done");
+    $("status-head").textContent = "Board cleared";
+    $("status-line").textContent = `Page copied after ${formatDuration(board.stats.seconds)} of reckoning`;
+  } else if (!running) {
+    $("status-head").textContent = "Hand at rest";
+    $("status-line").textContent = `Line ${fmt(cur + 1)} of the tablet`;
+  } else {
+    $("status-head").textContent = entries[cur].sign < 0 ? "Taking away" : entries[cur].numeral ? "Adding" : "Reading again";
+    $("status-line").textContent = `Letter ${fmt(board.stats.written + 1)} of ${fmt(entries.length)}`;
+  }
+
+  if (board.done || now - lastSheet > 120) {
+    setSheet(copied);
+    lastSheet = now;
+    $("sheet-wrap").classList.toggle("done", board.done);
+  }
+}
+
+document.querySelectorAll(".regulator button").forEach((b) => b.addEventListener("click", () => setSpeed(+b.dataset.speed)));
+$("pause").addEventListener("click", () => { if (!board.done) setRunning(!running); });
+$("restart").addEventListener("click", start);
+
+try {
+  const res = await fetch("board.tablet");
+  if (!res.ok) throw new Error(`The tablet could not be fetched (${res.status}).`);
+  entries = parseTablet(await res.text());
+  // A dry run on a second board, to know how long the real one will take.
+  const dry = new Board(entries);
+  while (!dry.done) dry.step();
+  total = dry.stats;
+  $("tablet-size").textContent = `${fmt(entries.length)} lines of Roman numerals`;
+  $("full-time").textContent = formatDuration(total.seconds);
+  setSpeed(speed);
+  start();
+  requestAnimationFrame(tick());
+} catch (err) {
+  $("status-head").textContent = "Reckoning fault";
+  $("status-line").textContent = err.message;
+}
+</script>
+</body>
+</html>
