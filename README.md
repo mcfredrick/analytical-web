@@ -24,7 +24,13 @@ a half.
 | `manuscript.html` | The compositor's manuscript the front page is punched from |
 | `manual.cards` | The punched deck for the engineer's manual (`?deck=manual`) |
 | `manual.html` | The manuscript the manual is punched from |
-| `tools/punch.mjs` | The card punch |
+| `tools/punch.mjs` | The card punch for the Engine |
+| `plate.css` | Styling shared by every machine's page |
+| `loom.html` | The Jacquard loom's console and cloth |
+| `loom.js` | The Jacquard loom: 400 hooks, one card per pick |
+| `loom.cards` | The punched deck the loom weaves |
+| `loom.txt` | The text woven into the plate |
+| `tools/punch-loom.mjs` | The loom's card punch |
 
 ## Changing the page
 
@@ -38,6 +44,18 @@ The punch fills in the ledger figures, runs the deck on the Engine and
 refuses to write a deck unless the Engine prints its manuscript exactly.
 The Store holds 990 data columns, so each manuscript must stay under 15,840
 characters. Characters above code 999 are set as HTML character references.
+
+## Changing the woven plate
+
+Edit `loom.txt` (the first line is the title), then punch a fresh deck:
+
+```sh
+node tools/punch-loom.mjs
+```
+
+The punch sets the text in a five-thread type, binds it in five-end satin
+and refuses to write the deck unless the loom weaves the design exactly.
+The type case holds capitals, figures and a little punctuation.
 
 ## Publishing on GitHub Pages
 

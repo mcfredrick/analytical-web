@@ -30,7 +30,11 @@ body {
   padding-inline: max(16px, env(safe-area-inset-left, 0px));
   padding-block: max(20px, env(safe-area-inset-top, 0px)) max(40px, env(safe-area-inset-bottom, 0px));
 }
-.plate { max-width: 1240px; margin: 0 auto; display: grid; gap: 28px; }
+.plate { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.machines { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0 5px -14px; font: 400 13px/1.2 var(--display); letter-spacing: .12em; }
+.machines a { color: var(--dim); text-decoration: none; padding-bottom: 2px; border-bottom: 1px solid transparent; }
+.machines a:hover { color: var(--line); border-bottom-color: var(--dim); }
+.machines a[aria-current="page"] { color: var(--amber); border-bottom-color: var(--amber); }
 
 /* Title block, as on an engineering drawing */
 header.title {
@@ -90,6 +94,6 @@ h1 { font: 400 clamp(2.2rem, 6vw, 4rem)/.95 var(--display); margin: 0; text-wrap
 button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .note { font: italic 13px/1.45 var(--italic); color: var(--dim); margin: 10px 0 0; }
-.apparatus { min-width: 0; display: grid; gap: 14px; }
+.apparatus { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .sheet-label { font: italic 13px/1.4 var(--italic); color: var(--dim); margin: 0; }
 .error { background: #5c1a14; color: var(--line); padding: 12px 14px; border: 1px solid #c45a46; }

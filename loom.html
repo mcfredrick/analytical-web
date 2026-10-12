@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Jacquard Loom · The Analytical Web</title>
+<meta name="description" content="A plate woven from punched cards on an emulated Jacquard loom of 1804.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="plate.css">
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://traffic.dayjob.dev/js/pa-8Ul0WavDb8Bure2CMTX3A.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
+<style>
+/* The card under the needles, drawn as the needles are arranged. */
+.card-face {
+  background: var(--paper); padding: 10px; border-radius: 2px; outline: 2px solid var(--amber); outline-offset: 2px;
+  display: grid; grid-template-columns: repeat(50, minmax(0, 1fr)); grid-template-rows: repeat(8, auto); grid-auto-flow: column; gap: 2px;
+}
+.card-face i { aspect-ratio: 1; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 1px #d8d0bb; }
+.card-face i.p { background: var(--ground-deep); box-shadow: none; }
+
+/* The shed: lifted warp threads stand up from the rest. */
+.shed { display: block; width: 100%; height: 34px; }
+
+.cloth-wrap { position: relative; background: #2a2620; padding: 12px; box-shadow: 0 2px 0 rgba(0,0,0,.25), 0 18px 40px -20px rgba(0,0,0,.6); }
+.cloth-wrap::after { /* the reed beating up the last pick */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--amber); opacity: .85;
+}
+.cloth-wrap.done::after { display: none; }
+#cloth { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="plate">
+  <nav class="machines" aria-label="Machines">
+    <a href="./">The Analytical Engine</a>
+    <a href="loom.html" aria-current="page">The Jacquard Loom</a>
+  </nav>
+  <header class="title">
+    <div>
+      <p class="eyebrow">Plate of the loom in operation</p>
+      <h1>The Jacquard Loom</h1>
+      <p class="lede">This plate is not stored as an image. It is a chain of <b id="deck-size">punched cards</b> for Joseph Marie Jacquard's loom of 1804, woven one pass of the shuttle at a time. Each letter is a figure where the warp lies on top of the cloth.</p>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite">
+      <strong id="status-head">Dressing the loom</strong>
+      <span id="status-line">Lacing the card chain</span>
+    </div>
+  </header>
+
+  <noscript><p class="error">The loom is worked by a treadle, which in this century is called JavaScript. The deck itself is at <a href="loom.cards" style="color:inherit">loom.cards</a>.</p></noscript>
+
+  <main class="works">
+    <div class="console">
+      <section class="part" aria-labelledby="h-card">
+        <h2 id="h-card">Card under the needles <small id="card-pos">card 0</small></h2>
+        <div class="card-face" id="card-face" aria-hidden="true"></div>
+      </section>
+
+      <section class="part" aria-labelledby="h-shed">
+        <h2 id="h-shed">The shed <small id="shed-count">0 of 400 ends lifted</small></h2>
+        <canvas class="shed" id="shed" width="800" height="34" aria-hidden="true"></canvas>
+      </section>
+
+      <section class="part" aria-labelledby="h-reg">
+        <h2 id="h-reg">Regulator</h2>
+        <dl class="ledger">
+          <div><dt>Loom time</dt><dd id="g-time">0 seconds</dd></div>
+          <div><dt>Picks woven</dt><dd id="g-picks">0</dd></div>
+          <div class="wide"><dt>Remaining at this speed</dt><dd id="g-eta">…</dd></div>
+        </dl>
+        <div class="regulator" role="group" aria-label="Loom speed">
+          <button type="button" data-speed="1">True speed</button>
+          <button type="button" data-speed="10">Ten times as fast</button>
+          <button type="button" data-speed="60">A minute a second</button>
+        </div>
+        <div class="controls">
+          <button type="button" id="pause">Stop the treadle</button>
+          <button type="button" id="restart">Start from the first card</button>
+        </div>
+        <p class="note">The ground is a five-end satin with the weft on top, and the letters are the same satin turned over so the warp shows. The speed follows H. William Nelson's <i>Jacquard Machines</i> (1909), which gives ninety to a hundred and thirty picks a minute for a single-action machine. In 1839 Michel-Marie Carquillat wove a silk portrait of Jacquard from some 24,000 cards, and Babbage liked to show his copy to guests.</p>
+      </section>
+    </div>
+
+    <section class="apparatus" aria-labelledby="h-cloth">
+      <div class="part">
+        <h2 id="h-cloth">The cloth <small>as it comes off the reed</small></h2>
+      </div>
+      <div class="cloth-wrap" id="cloth-wrap"><canvas id="cloth" role="img" aria-label="The woven plate"></canvas></div>
+      <p class="sheet-label"><a href="loom.cards" style="color:inherit">Inspect the deck.</a></p>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { parseLoomDeck, Loom, HOOKS, PICKS_PER_MINUTE } from "./loom.js";
+import { formatDuration } from "./engine.js";
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => n.toLocaleString("en-US");
+const THREAD = 2;                       // canvas pixels per thread
+const WARP = [27, 37, 64], WEFT = [236, 226, 200];
+
+let cards, loom, clock, speed = 1, running = true, drawn = 0;
+const cloth = $("cloth"), ctx = cloth.getContext("2d");
+const shed = $("shed"), shedCtx = shed.getContext("2d");
+
+$("card-face").innerHTML = "<i></i>".repeat(HOOKS);
+const holes = [...$("card-face").children];
+
+function start() {
+  loom = new Loom(cards);
+  clock = 0; drawn = 0;
+  ctx.clearRect(0, 0, cloth.width, cloth.height);
+  $("cloth-wrap").classList.remove("done");
+  $("status").classList.remove("done");
+  setRunning(true);
+}
+
+function setRunning(on) {
+  running = on;
+  $("pause").textContent = on ? "Stop the treadle" : "Work the treadle";
+}
+
+function setSpeed(s) {
+  speed = s;
+  document.querySelectorAll(".regulator button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.speed === s)));
+}
+
+// Each thread is shaded across its width so the satin floats read as silk.
+function drawPick(p, lifts) {
+  const img = ctx.createImageData(HOOKS * THREAD, THREAD);
+  for (let h = 0; h < HOOKS; h++) {
+    for (let dy = 0; dy < THREAD; dy++) for (let dx = 0; dx < THREAD; dx++) {
+      const [r, g, b] = lifts[h] ? WARP : WEFT;
+      const sheen = lifts[h] ? (dx ? -10 : 14) : (dy ? -14 : 8);
+      const i = ((dy * HOOKS * THREAD) + h * THREAD + dx) * 4;
+      img.data[i] = r + sheen; img.data[i + 1] = g + sheen; img.data[i + 2] = b + sheen; img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, p * THREAD);
+}
+
+function drawShed(lifts) {
+  const w = shed.width / HOOKS;
+  shedCtx.clearRect(0, 0, shed.width, shed.height);
+  for (let h = 0; h < HOOKS; h++) {
+    shedCtx.fillStyle = lifts && lifts[h] ? "#f2c15b" : "#4b6d9c";
+    const top = lifts && lifts[h] ? 0 : 18;
+    shedCtx.fillRect(h * w, top, Math.max(1, w - .5), shed.height - top);
+  }
+}
+
+function tick(last) {
+  return (now) => {
+    const dt = Math.min(1, (now - (last ?? now)) / 1000);
+    if (running && !loom.done) {
+      clock += dt * speed;
+      while (!loom.done && loom.seconds + 60 / PICKS_PER_MINUTE <= clock) loom.step();
+      if (loom.done) clock = loom.seconds;
+    }
+    render();
+    requestAnimationFrame(tick(now));
+  };
+}
+
+function render() {
+  while (drawn < loom.cloth.length) { drawPick(drawn, loom.cloth[drawn]); drawn++; }
+  const cur = Math.max(0, loom.pc - 1);
+  const lifts = loom.pc ? cards[cur] : null;
+  holes.forEach((el, h) => el.classList.toggle("p", !!(lifts && lifts[h])));
+  const lifted = lifts ? lifts.reduce((a, b) => a + b, 0) : 0;
+  $("shed-count").textContent = `${fmt(lifted)} of ${HOOKS} ends lifted`;
+  drawShed(lifts);
+  $("card-pos").textContent = `card ${fmt(loom.pc)} of ${fmt(cards.length)}`;
+
+  $("g-time").textContent = formatDuration(loom.seconds);
+  $("g-picks").textContent = `${fmt(loom.pc)} of ${fmt(cards.length)}`;
+  const left = Math.max(0, total - clock);
+  $("g-eta").textContent = loom.done ? "Nothing. The plate is woven." : `${formatDuration(left / speed)}`;
+
+  if (loom.done) {
+    $("status").classList.add("done");
+    $("status-head").textContent = "Cut from the loom";
+    $("status-line").textContent = `Plate woven in ${formatDuration(loom.seconds)}`;
+    $("cloth-wrap").classList.add("done");
+  } else if (!running) {
+    $("status-head").textContent = "Treadle stopped";
+    $("status-line").textContent = `Pick ${fmt(loom.pc)} of ${fmt(cards.length)}`;
+  } else {
+    $("status-head").textContent = "Weaving";
+    $("status-line").textContent = `Pick ${fmt(loom.pc)} of ${fmt(cards.length)}`;
+  }
+}
+
+document.querySelectorAll(".regulator button").forEach((b) => b.addEventListener("click", () => setSpeed(+b.dataset.speed)));
+$("pause").addEventListener("click", () => { if (!loom.done) setRunning(!running); });
+$("restart").addEventListener("click", start);
+
+let total;
+try {
+  const [deck, text] = await Promise.all(["loom.cards", "loom.txt"].map(async (f) => {
+    const res = await fetch(f);
+    if (!res.ok) throw new Error(`${f} could not be fetched (${res.status}).`);
+    return res.text();
+  }));
+  cards = parseLoomDeck(deck);
+  total = cards.length * 60 / PICKS_PER_MINUTE;
+  cloth.width = HOOKS * THREAD;
+  cloth.height = cards.length * THREAD;
+  cloth.setAttribute("aria-label", `A woven plate reading: ${text.trim().split(/\r?\n/).join(" ")}`);
+  $("deck-size").textContent = `${fmt(cards.length)} punched cards`;
+  setSpeed(speed);
+  start();
+  requestAnimationFrame(tick());
+} catch (err) {
+  $("status-head").textContent = "Loom fault";
+  $("status-line").textContent = err.message;
+}
+</script>
+</body>
+</html>
