@@ -101,4 +101,6 @@ button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 }
 .sheet-wrap.done::after { display: none; }
 .sheet-label { font: italic 13px/1.4 var(--italic); color: var(--dim); margin: 0; }
+.colophon { border-top: 1px solid var(--rule); padding-top: 14px; text-align: center; font: italic 14px/1.4 var(--italic); color: var(--dim); }
+.colophon a { color: var(--line); }
 .error { background: #5c1a14; color: var(--line); padding: 12px 14px; border: 1px solid #c45a46; }
